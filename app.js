@@ -44,7 +44,6 @@ function renderStatus(){
   $('#footHours').textContent = 'يوميًا ' + hrs + (s.off ? ' · ' + s.off + ' إجازة' : '');
   $('#branchPills').innerHTML = s.branches.map(b => `<span class="pill">📍 ${esc(b)}</span>`).join('');
   $('#footBranches').textContent = s.branches.length ? '📍 ' + s.branches.join(' · ') : '';
-  $('#footContact').innerHTML = s.contact ? `للتواصل: <a href="tel:+${esc(s.contact)}" dir="ltr">0${esc(s.contact.replace(/^966/, ''))}</a>` : '';
   const b = $('#banner'); b.hidden = !s.banner; b.textContent = s.banner;
   const c = $('#closedBox');
   if (!s.accepting){ c.hidden = false; c.textContent = 'متوقفين عن استقبال الطلبات حاليًا، نرجع لكم قريب ☁️'; }
