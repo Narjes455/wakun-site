@@ -167,7 +167,7 @@ function onOpen() {
 
 function tidy() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const INK = '#5E6447', BAND = '#F4E6E1';
+  const INK = '#5E6447', BAND = '#F2F0E6';
   const list = (vals) => SpreadsheetApp.newDataValidation().requireValueInList(vals, true).setAllowInvalid(false).build();
   const style = (name, widths, notes) => {
     const sh = ss.getSheetByName(name); if (!sh) return null;
@@ -189,7 +189,7 @@ function tidy() {
   const yesNo = (sh, col, n) => {
     const r = sh.getRange(2, col, n);
     r.setDataValidation(list(['نعم', 'لا'])).setHorizontalAlignment('center');
-    return cf(r, [['نعم', '#dcefe2', '#1f6b3a'], ['لا', '#fbe2e4', '#8b1c24']]);
+    return cf(r, [['نعم', '#dcefe2', '#1f6b3a'], ['لا', '#F6E7DA', '#8A4B2A']]);
   };
 
   let t = style(SH.MENU, [100, 190, 110, 80, 80, 80, 220, 100, 150, 120, 120, 260, 260], [
@@ -229,7 +229,7 @@ function tidy() {
     t.sh.getRange(2, 8, n).setNumberFormat('0 "ر.س"');
     const st = t.sh.getRange(2, 10, n);
     st.setDataValidation(list(STATUSES)).setHorizontalAlignment('center');
-    t.sh.setConditionalFormatRules(cf(st, [['جديد', '#fbe2e4', '#8b1c24'], ['يتجهز', '#fff3c4', '#7a5a00'], ['جاهز', '#dcefe2', '#1f6b3a'], ['استلم', '#eeeeee', '#555555'], ['ملغي', '#eeeeee', '#999999']]));
+    t.sh.setConditionalFormatRules(cf(st, [['جديد', '#E3E6CF', '#4A4E38'], ['يتجهز', '#fff3c4', '#7a5a00'], ['جاهز', '#dcefe2', '#1f6b3a'], ['استلم', '#eeeeee', '#555555'], ['ملغي', '#eeeeee', '#999999']]));
   }
   ss.getSheets().forEach(sh => { if (sh.getLastRow() > 1) sh.autoResizeRows(2, sh.getLastRow() - 1); });
 }
