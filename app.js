@@ -1,7 +1,13 @@
 /* ماتشا وكّن الجمل — صفحة العملاء */
 (function(){
 const K = window.WK, $ = s => document.querySelector(s), esc = K.esc;
-const CAT_IC = {'ماتشا':'🍵','قهوة باردة':'🧊','قهوة حارة':'☕','احتفالي':'🎉','حلويات':'🍫','ماتشا باودر':'📦'};
+const CAT_IC = {'ماتشا':'🍵','قهوة باردة':'🧊','قهوة حارة':'☕','احتفالي':'🎉','حلويات':'🍫','ماتشا باودر':'📦','عروض':'🎁'};
+/* اختيارات داخل العرض: from = خيارات من قسم بالمنيو، opts = خيارات ثابتة */
+const PICKS = {
+  offer_matcha: [{label:'الماتشا الأولى', from:'ماتشا'}, {label:'الماتشا الثانية', from:'ماتشا'}],
+  offer_winter: [{label:'القهوة الأولى', opts:['حار','بارد']}, {label:'القهوة الثانية', opts:['حار','بارد']}]
+};
+const pickOpts = p => p.opts || DATA.menu.filter(x => x.cat === p.from && x.on && x.milk !== 'none').map(x => x.name);
 const OCC_IC = {'تخرج':'🎓','عيد ميلاد':'🎂','نجاح':'⭐','بدون مناسبة':'💗'};
 let DATA = null, activeCat = null, cart = K.store.get('cart', []), printPhoto = null;
 
@@ -61,10 +67,10 @@ function renderTabs(){
 function renderMenu(){
   const list = DATA.menu.filter(m => m.cat === activeCat && (m.on || !DATA.settings.hideOut));
   if (!list.length){ $('#menu').innerHTML = '<div class="empty">المنيو يتجهز ☁️</div>'; return; }
-  const wide = activeCat === 'احتفالي';
+  const wide = activeCat === 'احتفالي' || activeCat === 'عروض', offer = activeCat === 'عروض';
   $('#menu').innerHTML = `<section class="sec"><div class="sec-h"><h2>${CAT_IC[activeCat] || ''} ${esc(activeCat)}</h2><div class="wave"></div></div>
    ${activeCat === 'ماتشا باودر' ? '<div class="note" style="margin:0 2px 12px">ماتشا احتفالية يابانية · متوفرة أيضًا في جاهز وذا شيفز</div>' : ''}
-   <div class="grid">${list.map((m, k) => `<div class="card ${wide ? 'wide' : ''} ${m.on ? '' : 'out'}" style="animation-delay:${k * 50}ms" data-id="${esc(m.id)}" role="button" tabindex="0">
+   <div class="grid">${list.map((m, k) => `<div class="card ${wide ? 'wide' : ''} ${offer ? 'offer' : ''} ${m.on ? '' : 'out'}" style="animation-delay:${k * 50}ms" data-id="${esc(m.id)}" role="button" tabindex="0">
       ${m.on ? (m.badge ? `<span class="lbl">${esc(m.badge)}</span>` : '') : '<span class="lbl">خلص اليوم</span>'}
       <div class="ph">${img(m)}</div>
       <div class="info"><h3>${esc(m.name)}</h3>${m.desc ? `<div class="desc">${esc(m.desc)}</div>` : ''}${m.cal ? `<div class="cal">🔥 ${m.cal} سعرة</div>` : ''}
@@ -88,7 +94,7 @@ const milkChips = (m) => {
 };
 function openItem(m){
   const milks = DATA.milks.filter(x => x.on);
-  cur = {m, milk: milks[0] ? milks[0].id : '', adds: [], q: 1, size: m.sizes && m.sizes.length ? m.sizes[0].name : '', slide: 0};
+  cur = {m, milk: milks[0] ? milks[0].id : '', adds: [], q: 1, picks: (PICKS[m.id] || []).map(p => pickOpts(p)[0] || ''), size: m.sizes && m.sizes.length ? m.sizes[0].name : '', slide: 0};
   drawItem();
 }
 function drawItem(){
@@ -97,15 +103,17 @@ function drawItem(){
   const gal = [m.img].concat(m.gallery || []);
   openSheet(`${gal.length > 1 ? `<div class="gal"><div class="gal-track" id="galT">${gal.map((g, i) => `<div class="gal-slide ${i ? 'photo' : ''}"><img src="${esc(K.imgUrl(g))}" alt="${esc(m.name)}" ${i ? 'loading="lazy"' : ''} referrerpolicy="no-referrer"></div>`).join('')}</div>
       <button class="gal-nav prev" data-g="-1" aria-label="السابقة">‹</button><button class="gal-nav next" data-g="1" aria-label="التالية">›</button>
-      <div class="gal-dots">${gal.map((_, i) => `<i class="${i === c.slide ? 'on' : ''}"></i>`).join('')}</div></div>` : `<div class="s-img">${img(m)}</div>`}<div class="s-body"><h2>${esc(m.name)}</h2>
+      <div class="gal-dots">${gal.map((_, i) => `<i class="${i === c.slide ? 'on' : ''}"></i>`).join('')}</div></div>` : `<div class="s-img ${m.cat === 'عروض' ? 'photo' : ''}">${img(m)}</div>`}<div class="s-body"><h2>${esc(m.name)}</h2>
     ${m.desc ? `<p style="opacity:.75;margin-top:4px">${esc(m.desc)}</p>` : ''}${m.cal ? `<div class="cal" style="font-size:13px">🔥 ${m.cal} سعرة حرارية</div>` : ''}
     ${m.sizes && m.sizes.length ? `<div class="opt-h">الحجم</div><div class="chips">${m.sizes.map(z => `<button class="chip ${c.size === z.name ? 'on' : ''}" data-size="${esc(z.name)}">${esc(z.name)} <small>${z.price} ريال</small></button>`).join('')}</div>` : ''}
+    ${(PICKS[m.id] || []).map((p, i) => `<div class="opt-h">${esc(p.label)}</div><div class="chips">${pickOpts(p).map(o => `<button class="chip ${c.picks[i] === o ? 'on' : ''}" data-pk="${i}" data-pv="${esc(o)}">${esc(o)}</button>`).join('')}</div>`).join('')}
     ${milkChips(m)}
     ${adds.length ? `<div class="opt-h">إضافات</div><div class="chips">${adds.map(x => `<button class="chip ${c.adds.includes(x.id) ? 'on' : ''}" data-add="${esc(x.id)}">${esc(x.name)} <small>+${x.price}</small></button>`).join('')}</div>` : ''}
     <div class="cta"><div class="qty"><button data-q="-1" aria-label="نقص">−</button><b>${c.q}</b><button data-q="1" aria-label="زيادة">+</button></div>
     <button class="btn" id="addBtn"><span>أضف للسلة</span><span>${pr.unit * c.q} ريال</span></button></div></div>`);
   const S = $('#sheetC');
   S.querySelectorAll('[data-milk]').forEach(b => b.onclick = () => { c.milk = b.dataset.milk; drawItem(); });
+  S.querySelectorAll('[data-pk]').forEach(b => b.onclick = () => { c.picks[+b.dataset.pk] = b.dataset.pv; drawItem(); });
   S.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { c.size = b.dataset.size; drawItem(); });
   const T = $('#galT');
   if (T){
@@ -116,7 +124,7 @@ function drawItem(){
   }
   S.querySelectorAll('[data-add]').forEach(b => b.onclick = () => { const i = b.dataset.add; c.adds = c.adds.includes(i) ? c.adds.filter(x => x !== i) : [...c.adds, i]; drawItem(); });
   S.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { c.q = Math.max(1, Math.min(20, c.q + +b.dataset.q)); drawItem(); });
-  $('#addBtn').onclick = () => { addToCart({id: m.id, milk: (m.milk === 'paid' || m.milk === 'free') ? c.milk : '', adds: c.adds, q: c.q, size: c.size || ''}); closeSheet(); };
+  $('#addBtn').onclick = () => { addToCart({id: m.id, milk: (m.milk === 'paid' || m.milk === 'free') ? c.milk : '', adds: c.adds, q: c.q, size: c.size || '', picks: c.picks.filter(String)}); closeSheet(); };
 }
 
 /* ---------- الكوب الاحتفالي ---------- */
@@ -234,7 +242,9 @@ async function send(){
   if (!/^05\d{8}$/.test(phone)) return err('اكتب رقم جوال صحيح يبدأ بـ 05');
   const btn = $('#send'); btn.disabled = true; btn.textContent = 'يرسل…'; err('');
   K.store.set('me', {name, phone, branch: form.branch, pay: form.pay});
-  const body = {a: 'order', name, phone, branch: form.branch, time: form.time, pay: form.pay, note: form.note,
+  const pk = cart.filter(x => x.picks && x.picks.length).map(x => { const m = byId(x.id); return '🎁 ' + (m ? m.name : x.id) + (x.q > 1 ? ' ×' + x.q : '') + ': ' + x.picks.join(' + '); });
+  const note = pk.concat(form.note ? [form.note] : []).join('\n');
+  const body = {a: 'order', name, phone, branch: form.branch, time: form.time, pay: form.pay, note,
     items: cart.map(x => ({id: x.id, q: x.q, milk: x.milk, adds: x.adds, occ: x.occ, card: x.card, size: x.size}))};
   if (cart.some(x => x.photo) && printPhoto) body.photo = printPhoto;
   try {

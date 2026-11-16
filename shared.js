@@ -19,6 +19,8 @@ const PAYS = ['كاش عند الاستلام', 'شبكة أو Apple Pay عند 
 const M = (id, name, cat, price, cal, img, milk, badge = '', desc = '', adds = []) => ({id, name, cat, price, cal, on:true, desc, badge, img, milk, adds, sizes:[], gallery:[]});
 const SEED = {
   menu: [
+    M('offer_matcha','عرض لفترة محدودة','عروض',50,'','offer_matcha.webp','paid','لفترة محدودة','٢ ماتشا من اختيارك + ٢ ماقن شوكلت توت'),
+    M('offer_winter','عرض الشتاء','عروض',37,'','offer_winter.webp','none','❄️','٢ قهوة اليوم (حار أو بارد) + كرانشي كيك'),
     M('latte','ايس ماتشا لاتيه','ماتشا',20,187,'latte.webp','paid','الأكثر طلبًا'),
     M('ccaramel','ايس ماتشا كريم كراميل','ماتشا',20,220,'ccaramel.webp','paid'),
     M('wmocha','ايس ماتشا وايت موكا','ماتشا',20,335,'wmocha.webp','paid'),
@@ -69,6 +71,7 @@ function priceItem(m, it, data){
     const a = data.adds.find(x => x.id === id && x.on); if (!a) return;
     unit += a.price; parts.push(a.name);
   });
+  if (it.picks && it.picks.length) parts.push(it.picks.join(' + '));
   if (m.cat === 'احتفالي'){
     if (it.occ) parts.push('المناسبة: ' + it.occ);
     if (it.card) parts.push('الكرت: ' + it.card);
@@ -76,7 +79,7 @@ function priceItem(m, it, data){
   return {unit, text: parts.join(' · ')};
 }
 
-function db(){ const d = store.get('db', null); if (d && d.v === 2) return d; const n = {v:2, data: JSON.parse(JSON.stringify(SEED)), orders: []}; store.set('db', n); return n; }
+function db(){ const d = store.get('db', null); if (d && d.v === 3) return d; const n = {v:3, data: JSON.parse(JSON.stringify(SEED)), orders: []}; store.set('db', n); return n; }
 function save(d){ store.set('db', d); }
 function today(){ const n = riyadhNow(); return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`; }
 function stamp(){ const n = riyadhNow(); return `${today()} ${pad(n.getHours())}:${pad(n.getMinutes())}`; }
