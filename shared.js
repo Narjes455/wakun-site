@@ -50,7 +50,7 @@ const SEED = {
     {id:'oat',name:'حليب الشوفان',price:4,on:true},{id:'coconut',name:'حليب جوز الهند',price:4,on:true}
   ],
   settings: {name:'ماتشا وكّن الجمل',open:16,close:24,off:'',accepting:true,banner:'',hideOut:false,
-    branches:['خميس مشيط','أبها - أحد رفيدة'],occasions:['تخرج','عيد ميلاد','نجاح','بدون مناسبة'],
+    branches:['خميس مشيط'],occasions:['تخرج','عيد ميلاد','نجاح','بدون مناسبة'],
     pays:PAYS.slice(),contact:'966509116220',transfer:'الآيبان: SA1780000107608016907588'}
 };
 const DEMO_PASS = 'wk';
