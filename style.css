@@ -228,3 +228,4 @@ select{width:100%;border:2px solid var(--pink);background:var(--white);border-ra
 .social svg{width:50px;height:50px;padding:13px;border-radius:50%;background:var(--sage);color:var(--white);box-shadow:0 4px 0 var(--sage-d);transition:.2s}
 .social a:hover svg{transform:translateY(-3px)}
 .handle{font-weight:600;color:var(--sage-d);margin-bottom:8px}
+.upload{display:block;cursor:pointer;margin-top:4px}
