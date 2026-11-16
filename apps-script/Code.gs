@@ -22,7 +22,52 @@ const POWDER_ROW = ['powder', 'بوكس ماتشا باودر', 'ماتشا با
   '30 جرام: 86، 60 جرام: 105، 100 جرام: 170', 'g_bag.webp، g_whisk.webp، g_whisk2.webp، g_balls.webp'];
 
 /* ترقية الشيت القديم: يضيف عمودي الأحجام والصور، ويدمج أصناف الباودر في صنف واحد بأحجام */
+const GREEN_ROWS = [
+  ['واتساب: رقم استقبال الطلبات', '966509116220', 'الرقم اللي توصله رسالة كل طلب جديد (بالصيغة الدولية بدون +). اتركيه فاضي لإيقاف الرسائل'],
+  ['Green API: idInstance', '', 'من صفحة الإنستانس في console.green-api.com'],
+  ['Green API: apiTokenInstance', '', 'من نفس الصفحة، لا تشاركيه مع أحد'],
+  ['Green API: apiUrl', 'https://api.green-api.com', 'من نفس الصفحة (مثال: https://7107.api.greenapi.com)']
+];
+/* يضيف صفوف إعدادات Green API للشيت لو ما كانت موجودة */
+function upgradeSettings_() {
+  const sh = sheet_(SH.SET); if (!sh) return;
+  const keys = rows_(SH.SET).map(r => String(r[0]).trim());
+  GREEN_ROWS.forEach(r => { if (keys.indexOf(r[0]) < 0) sh.appendRow(r); });
+}
+
+/* رسالة واتساب لرقم البزنس مع كل طلب جديد (عن طريق Green API) */
+function notify_(o) {
+  try {
+    const s = settings_();
+    const to = String(s['واتساب: رقم استقبال الطلبات'] || '').replace(/[^\d]/g, '');
+    const id = String(s['Green API: idInstance'] || '').trim(), tok = String(s['Green API: apiTokenInstance'] || '').trim();
+    if (!to || !id || !tok) return false;
+    const base = String(s['Green API: apiUrl'] || 'https://api.green-api.com').trim().replace(/\/+$/, '');
+    const msg = ['🐪 *طلب جديد ' + o.no + '*', '',
+      '👤 ' + o.name + ' · ' + o.phone,
+      '📍 ' + (o.branch || '-') + ' · ⏰ ' + (o.time || '-'),
+      '💳 ' + o.pay, '',
+      o.lines.map(l => '• ' + l).join('\n'), '',
+      '💰 *الإجمالي: ' + o.total + ' ريال*',
+      o.note ? '📝 ' + o.note : '',
+      o.photo ? '🖼️ صورة الطباعة: ' + o.photo : ''].join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    const r = UrlFetchApp.fetch(base + '/waInstance' + id + '/sendMessage/' + tok, {
+      method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      payload: JSON.stringify({ chatId: to + '@c.us', message: msg })
+    });
+    return r.getResponseCode() === 200;
+  } catch (e) { return false; }
+}
+/* شغّليها مرة وحدة من المحرر عشان توافقين على الصلاحية وتجربين الرسالة */
+function testNotify() {
+  upgradeSettings_();
+  const ok = notify_({ no: 'تجربة', name: 'تجربة', phone: '05xxxxxxxx', branch: 'خميس مشيط', time: 'اليوم 5 م', pay: 'كاش عند الاستلام',
+    lines: ['1× ايس ماتشا لاتيه (حليب عادي) = 20'], total: 20, note: 'هذي رسالة تجربة من الموقع', photo: '' });
+  Logger.log(ok ? 'وصلت الرسالة ✓' : 'ما وصلت: تأكدي من إعدادات Green API في تبويب الإعدادات');
+}
+
 function upgrade_() {
+  upgradeSettings_();
   const sh = sheet_(SH.MENU); if (!sh) return;
   const head = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0].map(String);
   if (head.indexOf('الأحجام') >= 0) return;
@@ -330,6 +375,8 @@ function placeOrder_(b) {
   const no = 'WK-' + (100 + sh.getLastRow());
   sh.appendRow([no, now_(), branch, clean_(b.time, 30), clean_(b.name, 40) || 'ضيف', "'" + ph, lines.join('\n'), total,
     pay, 'جديد', count, clean_(b.note, 300), photo]);
+  notify_({ no: no, name: clean_(b.name, 40) || 'ضيف', phone: ph, branch: branch, time: clean_(b.time, 30), pay: pay,
+    lines: lines, total: total, note: clean_(b.note, 300), photo: photo });
   const map = (branches_(settings_()['الفروع']).find(x => x.name === branch) || {}).map || '';
   return { ok: true, no: no, total: total, branch: branch, map: map, pay: pay, transfer: pay === 'تحويل بنكي' ? s.transfer : '' };
 }
