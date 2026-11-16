@@ -41,7 +41,7 @@ function notify_(o) {
     const s = settings_();
     const to = String(s['واتساب: رقم استقبال الطلبات'] || '').replace(/[^\d]/g, '');
     const id = String(s['Green API: idInstance'] || '').trim(), tok = String(s['Green API: apiTokenInstance'] || '').trim();
-    if (!to || !id || !tok) return false;
+    if (!to || !id || !tok) { Logger.log('ناقص في الإعدادات: ' + [!to && 'رقم استقبال الطلبات', !id && 'idInstance', !tok && 'apiTokenInstance'].filter(Boolean).join('، ')); return false; }
     const base = String(s['Green API: apiUrl'] || 'https://api.green-api.com').trim().replace(/\/+$/, '');
     const msg = ['🐪 *طلب جديد ' + o.no + '*', '',
       '👤 ' + o.name + ' · ' + o.phone,
@@ -55,6 +55,7 @@ function notify_(o) {
       method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       payload: JSON.stringify({ chatId: to + '@c.us', message: msg })
     });
+    if (r.getResponseCode() !== 200) Logger.log('رد Green API: ' + r.getResponseCode() + ' ' + r.getContentText().slice(0, 300));
     return r.getResponseCode() === 200;
   } catch (e) { return false; }
 }
