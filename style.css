@@ -253,3 +253,16 @@ select{width:100%;border:2px solid var(--pink);background:var(--white);border-ra
   filter:drop-shadow(0 10px 14px rgba(94,100,71,.25));animation:pop .6s}
 .ci img{background:linear-gradient(180deg,#F7EDE9,#EBD5CE);object-fit:contain;padding:3px}
 .cele-prev{background:linear-gradient(180deg,#F7EDE9 0%,#E6CCC3 100%) !important}
+
+/* ===== معرض صور المنتج ===== */
+.gal{position:relative;margin:12px 16px 0;border-radius:var(--r);overflow:hidden;height:340px;background:linear-gradient(180deg,#F7EDE9 0%,#E6CCC3 100%)}
+.gal-track{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gal-track::-webkit-scrollbar{display:none}
+.gal-slide{flex:0 0 100%;height:100%;scroll-snap-align:center;display:flex;align-items:flex-end;justify-content:center}
+.gal-slide img{height:94%;width:auto;object-fit:contain;filter:drop-shadow(0 10px 14px rgba(94,100,71,.25))}
+.gal-slide.photo img{width:100%;height:100%;object-fit:cover;filter:none}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,251,248,.9);color:var(--sage-d);font-size:24px;line-height:1;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:2}
+.gal-nav.prev{right:10px}.gal-nav.next{left:10px}
+.gal-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:2}
+.gal-dots i{width:7px;height:7px;border-radius:7px;background:rgba(255,255,255,.7);box-shadow:0 0 0 1px rgba(94,100,71,.3);transition:.3s}
+.gal-dots i.on{width:20px;background:var(--sage)}

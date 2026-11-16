@@ -68,7 +68,7 @@ function renderMenu(){
       ${m.on ? (m.badge ? `<span class="lbl">${esc(m.badge)}</span>` : '') : '<span class="lbl">خلص اليوم</span>'}
       <div class="ph">${img(m)}</div>
       <div class="info"><h3>${esc(m.name)}</h3>${m.desc ? `<div class="desc">${esc(m.desc)}</div>` : ''}${m.cal ? `<div class="cal">🔥 ${m.cal} سعرة</div>` : ''}
-      <div class="row"><span class="price">${m.price} <small>ريال</small></span><span class="add">+</span></div></div></div>`).join('')}</div></section>`;
+      <div class="row"><span class="price">${m.sizes && m.sizes.length > 1 ? '<small>من</small> ' : ''}${m.price} <small>ريال</small></span><span class="add">+</span></div></div></div>`).join('')}</div></section>`;
   $('#menu').querySelectorAll('[data-id]').forEach(e => {
     const go = () => { const m = byId(e.dataset.id); if (!m || !m.on) return; m.cat === 'احتفالي' ? openCele(m.id) : openItem(m); };
     e.onclick = go; e.onkeydown = ev => { if (ev.key === 'Enter') go(); };
@@ -88,23 +88,35 @@ const milkChips = (m) => {
 };
 function openItem(m){
   const milks = DATA.milks.filter(x => x.on);
-  cur = {m, milk: milks[0] ? milks[0].id : '', adds: [], q: 1};
+  cur = {m, milk: milks[0] ? milks[0].id : '', adds: [], q: 1, size: m.sizes && m.sizes.length ? m.sizes[0].name : '', slide: 0};
   drawItem();
 }
 function drawItem(){
   const c = cur, m = c.m, pr = K.priceItem(m, c, DATA);
   const adds = m.adds.map(id => DATA.adds.find(a => a.id === id && a.on)).filter(Boolean);
-  openSheet(`<div class="s-img">${img(m)}</div><div class="s-body"><h2>${esc(m.name)}</h2>
+  const gal = [m.img].concat(m.gallery || []);
+  openSheet(`${gal.length > 1 ? `<div class="gal"><div class="gal-track" id="galT">${gal.map((g, i) => `<div class="gal-slide ${i ? 'photo' : ''}"><img src="${esc(K.imgUrl(g))}" alt="${esc(m.name)}" ${i ? 'loading="lazy"' : ''} referrerpolicy="no-referrer"></div>`).join('')}</div>
+      <button class="gal-nav prev" data-g="-1" aria-label="السابقة">‹</button><button class="gal-nav next" data-g="1" aria-label="التالية">›</button>
+      <div class="gal-dots">${gal.map((_, i) => `<i class="${i === c.slide ? 'on' : ''}"></i>`).join('')}</div></div>` : `<div class="s-img">${img(m)}</div>`}<div class="s-body"><h2>${esc(m.name)}</h2>
     ${m.desc ? `<p style="opacity:.75;margin-top:4px">${esc(m.desc)}</p>` : ''}${m.cal ? `<div class="cal" style="font-size:13px">🔥 ${m.cal} سعرة حرارية</div>` : ''}
+    ${m.sizes && m.sizes.length ? `<div class="opt-h">الحجم</div><div class="chips">${m.sizes.map(z => `<button class="chip ${c.size === z.name ? 'on' : ''}" data-size="${esc(z.name)}">${esc(z.name)} <small>${z.price} ريال</small></button>`).join('')}</div>` : ''}
     ${milkChips(m)}
     ${adds.length ? `<div class="opt-h">إضافات</div><div class="chips">${adds.map(x => `<button class="chip ${c.adds.includes(x.id) ? 'on' : ''}" data-add="${esc(x.id)}">${esc(x.name)} <small>+${x.price}</small></button>`).join('')}</div>` : ''}
     <div class="cta"><div class="qty"><button data-q="-1" aria-label="نقص">−</button><b>${c.q}</b><button data-q="1" aria-label="زيادة">+</button></div>
     <button class="btn" id="addBtn"><span>أضف للسلة</span><span>${pr.unit * c.q} ريال</span></button></div></div>`);
   const S = $('#sheetC');
   S.querySelectorAll('[data-milk]').forEach(b => b.onclick = () => { c.milk = b.dataset.milk; drawItem(); });
+  S.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { c.size = b.dataset.size; drawItem(); });
+  const T = $('#galT');
+  if (T){
+    const dots = [...S.querySelectorAll('.gal-dots i')], w = () => T.clientWidth;
+    requestAnimationFrame(() => { T.scrollLeft = -c.slide * w(); });
+    T.onscroll = () => { const i = Math.round(Math.abs(T.scrollLeft) / w()); if (i !== c.slide){ c.slide = i; dots.forEach((d, k) => d.classList.toggle('on', k === i)); } };
+    S.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { const n = Math.max(0, Math.min(dots.length - 1, c.slide + +b.dataset.g)); T.scrollTo({left: -n * w(), behavior: 'smooth'}); });
+  }
   S.querySelectorAll('[data-add]').forEach(b => b.onclick = () => { const i = b.dataset.add; c.adds = c.adds.includes(i) ? c.adds.filter(x => x !== i) : [...c.adds, i]; drawItem(); });
   S.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { c.q = Math.max(1, Math.min(20, c.q + +b.dataset.q)); drawItem(); });
-  $('#addBtn').onclick = () => { addToCart({id: m.id, milk: (m.milk === 'paid' || m.milk === 'free') ? c.milk : '', adds: c.adds, q: c.q}); closeSheet(); };
+  $('#addBtn').onclick = () => { addToCart({id: m.id, milk: (m.milk === 'paid' || m.milk === 'free') ? c.milk : '', adds: c.adds, q: c.q, size: c.size || ''}); closeSheet(); };
 }
 
 /* ---------- الكوب الاحتفالي ---------- */
@@ -223,7 +235,7 @@ async function send(){
   const btn = $('#send'); btn.disabled = true; btn.textContent = 'يرسل…'; err('');
   K.store.set('me', {name, phone, branch: form.branch, pay: form.pay});
   const body = {a: 'order', name, phone, branch: form.branch, time: form.time, pay: form.pay, note: form.note,
-    items: cart.map(x => ({id: x.id, q: x.q, milk: x.milk, adds: x.adds, occ: x.occ, card: x.card}))};
+    items: cart.map(x => ({id: x.id, q: x.q, milk: x.milk, adds: x.adds, occ: x.occ, card: x.card, size: x.size}))};
   if (cart.some(x => x.photo) && printPhoto) body.photo = printPhoto;
   try {
     const r = await K.apiPost(body);

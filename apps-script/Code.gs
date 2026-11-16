@@ -17,6 +17,32 @@ const MILK_MODES = ['اختيار بسعر', 'اختيار مجاني', 'بدو�
 const CATS = ['ماتشا', 'قهوة باردة', 'قهوة حارة', 'احتفالي', 'حلويات', 'ماتشا باودر'];
 const PAYS = ['كاش عند الاستلام', 'شبكة أو Apple Pay عند الاستلام', 'تحويل بنكي'];
 const STATUSES = ['جديد', 'يتجهز', 'جاهز', 'استلم', 'ملغي'];
+const MENU_HEAD = ['المعرف', 'الصنف', 'القسم', 'السعر', 'السعرات', 'متوفر', 'الوصف', 'شارة', 'الصورة', 'الحليب', 'الإضافات', 'الأحجام', 'صور إضافية'];
+const POWDER_ROW = ['powder', 'بوكس ماتشا باودر', 'ماتشا باودر', 86, '', 'نعم', 'ماتشا احتفالية يابانية', '', 'powder.webp', 'بدون', '',
+  '30 جرام: 86، 60 جرام: 105، 100 جرام: 170', 'g_bag.webp، g_whisk.webp، g_whisk2.webp، g_balls.webp'];
+
+/* ترقية الشيت القديم: يضيف عمودي الأحجام والصور، ويدمج أصناف الباودر في صنف واحد بأحجام */
+function upgrade_() {
+  const sh = sheet_(SH.MENU); if (!sh) return;
+  const head = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0].map(String);
+  if (head.indexOf('الأحجام') >= 0) return;
+  sh.getRange(1, 12, 1, 2).setValues([['الأحجام', 'صور إضافية']]).setFontWeight('bold').setFontColor('#ffffff').setBackground('#5E6447');
+  sh.setColumnWidth(12, 260); sh.setColumnWidth(13, 260);
+  sh.getRange(1, 12).setNote('للمنتج اللي له أحجام: الاسم: السعر، بينها فاصلة. مثال: 30 جرام: 86، 60 جرام: 105');
+  sh.getRange(1, 13).setNote('صور تتقلب في نافذة المنتج: أسماء ملفات من images أو روابط قوقل درايف، بينها فاصلة');
+  const ids = sh.getRange(2, 1, Math.max(1, sh.getLastRow() - 1), 1).getValues().map(r => String(r[0]).trim());
+  const old = ['powder30', 'powder60', 'powder100'].map(id => ids.indexOf(id)).filter(i => i >= 0).sort((a, b) => b - a);
+  if (old.length) {
+    const at = old[old.length - 1] + 2;
+    sh.getRange(at, 1, 1, POWDER_ROW.length).setValues([POWDER_ROW]);
+    old.slice(0, -1).forEach(i => sh.deleteRow(i + 2));
+  }
+}
+function sizes_(v) {
+  return String(v || '').split(/[,،\n]+/).map(x => x.trim()).filter(String).map(x => {
+    const m = x.match(/^(.*?)[:：=]\s*([\d.]+)\s*$/); return m ? { name: m[1].trim(), price: Number(m[2]) } : null;
+  }).filter(Boolean);
+}
 
 /* =============== التركيب الأول =============== */
 function setup() {
@@ -33,7 +59,7 @@ function setup() {
     sh.setRightToLeft(true);
     return sh;
   };
-  make(SH.MENU, ['المعرف', 'الصنف', 'القسم', 'السعر', 'السعرات', 'متوفر', 'الوصف', 'شارة', 'الصورة', 'الحليب', 'الإضافات'], [
+  make(SH.MENU, MENU_HEAD, [
     ['latte', 'ايس ماتشا لاتيه', 'ماتشا', 20, 187, 'نعم', '', 'الأكثر طلبًا', 'latte.webp', 'اختيار بسعر', ''],
     ['ccaramel', 'ايس ماتشا كريم كراميل', 'ماتشا', 20, 220, 'نعم', '', '', 'ccaramel.webp', 'اختيار بسعر', ''],
     ['wmocha', 'ايس ماتشا وايت موكا', 'ماتشا', 20, 335, 'نعم', '', '', 'wmocha.webp', 'اختيار بسعر', ''],
@@ -54,9 +80,7 @@ function setup() {
     ['crunchy', 'كرانشي كيك', 'حلويات', 25, 490, 'نعم', '', '', 'crunchy.webp', 'بدون', ''],
     ['lava', 'لافا كيك', 'حلويات', 25, 360, 'نعم', '', '', 'lava.webp', 'بدون', ''],
     ['matilda', 'ماتيلدا بيكان كوب', 'حلويات', 20, 380, 'نعم', '', '', 'matilda.webp', 'بدون', ''],
-    ['powder30', 'بوكس ماتشا باودر 30 جرام', 'ماتشا باودر', 86, '', 'نعم', 'ماتشا احتفالية يابانية', '', 'powder.webp', 'بدون', ''],
-    ['powder60', 'بوكس ماتشا باودر 60 جرام', 'ماتشا باودر', 105, '', 'نعم', 'ماتشا احتفالية يابانية', '', 'powder.webp', 'بدون', ''],
-    ['powder100', 'بوكس ماتشا باودر 100 جرام', 'ماتشا باودر', 170, '', 'نعم', 'ماتشا احتفالية يابانية', 'أوفر', 'powder.webp', 'بدون', '']
+    POWDER_ROW
   ]);
   make(SH.ADD, ['المعرف', 'الإضافة', 'السعر', 'متوفر'], [
     ['print', 'طباعة صورة خاصة', 15, 'نعم']
@@ -86,6 +110,7 @@ function setup() {
   const def = ss.getSheetByName('Sheet1') || ss.getSheetByName('الورقة1') || ss.getSheetByName('ورقة1');
   if (def && ss.getSheets().length > 1 && def.getLastRow() === 0) ss.deleteSheet(def);
   photoFolder_();
+  upgrade_();
   tidy();
 }
 
@@ -121,11 +146,13 @@ function tidy() {
     return cf(r, [['نعم', '#dcefe2', '#1f6b3a'], ['لا', '#fbe2e4', '#8b1c24']]);
   };
 
-  let t = style(SH.MENU, [100, 190, 110, 80, 80, 80, 220, 100, 150, 120, 120], [
+  let t = style(SH.MENU, [100, 190, 110, 80, 80, 80, 220, 100, 150, 120, 120, 260, 260], [
     'حروف إنجليزية بدون مسافات وما تتكرر', 'اسم المنتج كما يظهر', 'القسم اللي يظهر فيه المنتج', 'بالريال', 'سعرة حرارية (اختياري)',
     'نعم = ظاهر، لا = خلص', 'وصف قصير (اختياري)', 'كلمة صغيرة فوق المنتج (اختياري)', 'اسم صورة من مجلد images، أو رابط قوقل درايف',
     'اختيار بسعر = العميل يختار الحليب بسعره من تبويب الحليب\nاختيار مجاني = يختار بدون زيادة\nبدون = ما فيه اختيار حليب',
-    'معرفات الإضافات المسموحة من تبويب الإضافات، بينها فاصلة. فاضي = بدون إضافات']);
+    'معرفات الإضافات المسموحة من تبويب الإضافات، بينها فاصلة. فاضي = بدون إضافات',
+    'للمنتج اللي له أحجام: الاسم: السعر، بينها فاصلة. مثال: 30 جرام: 86، 60 جرام: 105',
+    'صور تتقلب في نافذة المنتج: أسماء ملفات من images أو روابط قوقل درايف، بينها فاصلة']);
   if (t) {
     const n = t.rows - 1;
     t.sh.getRange(2, 4, n).setNumberFormat('0 "ر.س"').setHorizontalAlignment('center');
@@ -198,8 +225,10 @@ function publicData_() {
   const menu = rows_(SH.MENU).filter(r => r[0] !== '' && r[1] !== '').map(r => ({
     id: String(r[0]).trim(), name: String(r[1]), cat: String(r[2] || '').trim() || 'ماتشا', price: Number(r[3]) || 0,
     cal: r[4] === '' ? '' : Number(r[4]) || '', on: yes_(r[5]), desc: String(r[6] || ''), badge: String(r[7] || ''),
-    img: String(r[8] || '').trim(), milk: milkMode_(r[9]), adds: ids_(r[10])
+    img: String(r[8] || '').trim(), milk: milkMode_(r[9]), adds: ids_(r[10]),
+    sizes: sizes_(r[11]), gallery: String(r[12] || '').split(/[,،\n]+/).map(x => x.trim()).filter(String)
   }));
+  menu.forEach(m => { if (m.sizes.length) m.price = Math.min.apply(null, m.sizes.map(z => z.price)); });
   const opt = n => rows_(n).filter(r => r[0] !== '' && r[1] !== '').map(r => ({ id: String(r[0]).trim(), name: String(r[1]), price: Number(r[2]) || 0, on: yes_(r[3]) }));
   const close = s['يسكر الساعة'] === '' || s['يسكر الساعة'] == null ? 24 : Number(s['يسكر الساعة']);
   const pays = list_(s['طرق الدفع']).filter(p => PAYS.indexOf(p) >= 0);
@@ -223,6 +252,10 @@ function publicData_() {
 /* سعر المنتج يتحسب هنا في الخادم من الشيت، مو من المتصفح */
 function priceItem_(m, it, data) {
   let unit = m.price; const parts = [];
+  if (m.sizes && m.sizes.length) {
+    const z = m.sizes.find(x => x.name === String(it.size)) || m.sizes[0];
+    unit = z.price; parts.push(z.name);
+  }
   if (m.milk === 'paid' || m.milk === 'free') {
     const mk = data.milks.find(x => x.id === String(it.milk) && x.on) || data.milks.find(x => x.on);
     if (mk) { parts.push(mk.name); if (m.milk === 'paid') unit += mk.price; }
@@ -243,7 +276,7 @@ function priceItem_(m, it, data) {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   try {
-    if (p.a === 'data') return json_(publicData_());
+    if (p.a === 'data') { upgrade_(); return json_(publicData_()); }
     if (p.a === 'track') {
       const r = rows_(SH.ORD).find(x => String(x[0]) === String(p.no));
       return json_(r ? { ok: true, status: String(r[9]) } : { ok: false });

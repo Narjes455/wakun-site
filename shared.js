@@ -16,7 +16,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const PAYS = ['كاش عند الاستلام', 'شبكة أو Apple Pay عند الاستلام', 'تحويل بنكي'];
 
 /* ---------- بيانات وضع العرض (بدون شيت) — نفس محتوى الشيت الأولي ---------- */
-const M = (id, name, cat, price, cal, img, milk, badge = '', desc = '', adds = []) => ({id, name, cat, price, cal, on:true, desc, badge, img, milk, adds});
+const M = (id, name, cat, price, cal, img, milk, badge = '', desc = '', adds = []) => ({id, name, cat, price, cal, on:true, desc, badge, img, milk, adds, sizes:[], gallery:[]});
 const SEED = {
   menu: [
     M('latte','ايس ماتشا لاتيه','ماتشا',20,187,'latte.webp','paid','الأكثر طلبًا'),
@@ -39,9 +39,8 @@ const SEED = {
     M('crunchy','كرانشي كيك','حلويات',25,490,'crunchy.webp','none'),
     M('lava','لافا كيك','حلويات',25,360,'lava.webp','none'),
     M('matilda','ماتيلدا بيكان كوب','حلويات',20,380,'matilda.webp','none'),
-    M('powder30','بوكس ماتشا باودر 30 جرام','ماتشا باودر',86,'','powder.webp','none','','ماتشا احتفالية يابانية'),
-    M('powder60','بوكس ماتشا باودر 60 جرام','ماتشا باودر',105,'','powder.webp','none','','ماتشا احتفالية يابانية'),
-    M('powder100','بوكس ماتشا باودر 100 جرام','ماتشا باودر',170,'','powder.webp','none','أوفر','ماتشا احتفالية يابانية')
+    Object.assign(M('powder','بوكس ماتشا باودر','ماتشا باودر',86,'','powder.webp','none','','ماتشا احتفالية يابانية'),
+      {sizes:[{name:'30 جرام',price:86},{name:'60 جرام',price:105},{name:'100 جرام',price:170}], gallery:['g_bag.webp','g_whisk.webp','g_whisk2.webp','g_balls.webp']})
   ],
   adds: [{id:'print',name:'طباعة صورة خاصة',price:15,on:true}],
   milks: [
@@ -57,6 +56,10 @@ const DEMO_PASS = 'wk';
 /* سعر المنتج: نفس حساب الخادم */
 function priceItem(m, it, data){
   let unit = m.price; const parts = [];
+  if (m.sizes && m.sizes.length){
+    const z = m.sizes.find(x => x.name === it.size) || m.sizes[0];
+    unit = z.price; parts.push(z.name);
+  }
   if (m.milk === 'paid' || m.milk === 'free'){
     const mk = data.milks.find(x => x.id === it.milk && x.on) || data.milks.find(x => x.on);
     if (mk){ parts.push(mk.name); if (m.milk === 'paid') unit += mk.price; }
@@ -73,7 +76,7 @@ function priceItem(m, it, data){
   return {unit, text: parts.join(' · ')};
 }
 
-function db(){ const d = store.get('db', null); if (d && d.v === 1) return d; const n = {v:1, data: JSON.parse(JSON.stringify(SEED)), orders: []}; store.set('db', n); return n; }
+function db(){ const d = store.get('db', null); if (d && d.v === 2) return d; const n = {v:2, data: JSON.parse(JSON.stringify(SEED)), orders: []}; store.set('db', n); return n; }
 function save(d){ store.set('db', d); }
 function today(){ const n = riyadhNow(); return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`; }
 function stamp(){ const n = riyadhNow(); return `${today()} ${pad(n.getHours())}:${pad(n.getMinutes())}`; }
