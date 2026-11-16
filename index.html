@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ماتشا وكّن الجمل 🐪 | اطلب الحين</title>
+<meta name="description" content="ماتشا و قهوة تلامس السحاب وحلى يكمّل المزاج ☁️ — اطلب واستلم من فرعك">
+<meta property="og:title" content="ماتشا وكّن الجمل 🐪">
+<meta property="og:description" content="ماتشا و قهوة تلامس السحاب وحلى يكمّل المزاج ☁️">
+<meta property="og:image" content="logo.png">
+<meta name="theme-color" content="#DCBCAF">
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Readex+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ الانترو ============ -->
+<div id="intro" class="stripes" role="button" aria-label="ادخل المنيو">
+  <svg class="frame" viewBox="0 0 400 700" preserveAspectRatio="none" aria-hidden="true"><path id="f1"/><path id="f2" class="inner"/></svg>
+  <div class="cloud" style="top:12%;animation-duration:22s">☁️</div>
+  <div class="cloud" style="top:24%;animation-duration:30s;animation-delay:-12s;font-size:34px">☁️</div>
+  <div class="cloud" style="top:6%;animation-duration:26s;animation-delay:-6s;font-size:28px">☁️</div>
+  <svg class="dunes" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 60 Q80 20 160 55 T320 45 T400 50 V120 H0Z" fill="#A9AE93"/>
+    <path d="M0 85 Q100 50 200 80 T400 75 V120 H0Z" fill="#7F8566"/>
+  </svg>
+  <div class="camel-walk" aria-hidden="true"><span>🐪</span></div>
+  <div class="intro-card">
+    <div class="intro-logo" id="iLogo">
+      <img class="on" src="images/logo1.webp" alt="وكّن الجمل"><img src="images/logo2.webp" alt=""><img src="images/logo3.webp" alt=""><img src="images/logo4.webp" alt="">
+    </div>
+    <h1>ماتشا وكّن الجمل</h1>
+    <p><span class="typing" id="typing"></span></p>
+    <button class="btn-enter" id="enterBtn">ادخل وكّنا ☁️</button>
+  </div>
+</div>
+
+<div class="app">
+  <header class="hero stripes">
+    <div class="hero-top">
+      <div class="hero-logo"><img src="images/logo1.webp" alt=""></div>
+      <div>
+        <h1>ماتشا وكّن الجمل 🐪</h1>
+        <div class="tag">ماتشا و قهوة تلامس السحاب وحلى يكمّل المزاج ☁️</div>
+      </div>
+    </div>
+    <div class="pills">
+      <span class="pill" id="statusPill"><span class="dot"></span> <span id="statusTxt">…</span></span>
+      <span class="pill" id="hoursPill">🕓 …</span>
+    </div>
+    <div class="pills" id="branchPills"></div>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+  <div class="closed" id="closedBox" hidden></div>
+
+  <div class="special" id="celeBanner" role="button" tabindex="0">
+    <div class="confetti" id="confetti"></div>
+    <span class="new-badge">للمناسبات ✨</span>
+    <img src="images/cele_matcha.webp" alt="">
+    <div>
+      <h3>صمّم كوبك الاحتفالي 🎉</h3>
+      <p>اختر المناسبة واكتب الإهداء على الكرت، وتقدر تطبع صورة خاصة على الكوب.</p>
+      <span class="go">صمّمه الحين ←</span>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs"></nav>
+  <main id="menu"><div class="empty">يحمّل المنيو…</div></main>
+
+  <footer class="foot">
+    <div class="brandstrip"><img src="images/logo1.webp" alt=""><img src="images/logo2.webp" alt=""><img src="images/logo3.webp" alt=""><img src="images/logo4.webp" alt=""></div>
+    <div id="footBranches"></div>
+    <div id="footHours"></div>
+    <div id="footContact"></div>
+    <div class="credit">تطوير <a href="https://narjes455.github.io/" target="_blank" rel="noopener">نرجس العمري</a></div>
+  </footer>
+</div>
+
+<div class="cart-bar" id="cartBar">
+  <button class="btn" id="cartBtn"><span><span class="count" id="cCount">0</span> &nbsp;عرض السلة</span><span id="cTotal">0 ريال</span></button>
+</div>
+
+<div class="overlay" id="ov"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><button class="close" id="closeBtn" aria-label="إغلاق">✕</button><div id="sheetC"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="shared.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
